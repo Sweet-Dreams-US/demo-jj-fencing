@@ -1,6 +1,8 @@
 // Images + scroll-scrub frames: demos Supabase `demo-media` bucket (public CDN).
+// All media is JJ-specific, Higgsfield-generated for Northeast Wisconsin / Fox
+// Valley (cedar, pines + autumn hardwoods) — nothing reused from other demos.
 const BASE =
-  "https://vhyjphcwfvrcclqberoe.supabase.co/storage/v1/object/public/demo-media/demo-south-lake-fence";
+  "https://vhyjphcwfvrcclqberoe.supabase.co/storage/v1/object/public/demo-media/demo-jj-fencing";
 
 // Video: Cloudflare Stream (adaptive HLS — crisp on mobile, streams only what
 // the device/connection needs). The film is chaptered so mobile can snap
@@ -54,6 +56,6 @@ export const media = {
 // Scroll-scrub frame sequence — cut from the native-4K master.
 // `scroll4` = 1920w (desktop). `scroll4-md` = 1152w (mobile — crisp on
 // high-DPR phones, much lighter than the full set).
-export const SCROLL_FRAME_COUNT = 283;
+export const SCROLL_FRAME_COUNT = 193;
 export const scrollFrame = (i: number, small = false) =>
   `${BASE}/${small ? "scroll4-md" : "scroll4"}/frame-${String(i).padStart(4, "0")}.webp`;
