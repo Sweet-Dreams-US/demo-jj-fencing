@@ -1,0 +1,105 @@
+@import "tailwindcss";
+
+:root {
+  /* JJ Fencing & Construction — Appleton "Tension Zone": northern conifer meets southern hardwood.
+     Same variable roles as before so every component keeps working — new Northwoods mood. */
+  --clay: #a9552b;        /* primary — hardwood maple/oak rust (CTAs, accents) */
+  --clay-dark: #863f1e;
+  --grove: #1f3d2e;       /* anchor — balsam & spruce evergreen (dark surfaces) */
+  --grove-deep: #14291f;
+  --gold: #d69a3e;        /* accent — autumn hardwood light */
+  --cedar: #6b4a2e;       /* secondary — hardwood bark tone */
+  --cream: #f4eee1;       /* warm birch-bark background */
+  --cream-deep: #e8dcc6;
+  --ink: #1b1f1a;         /* body text — deep forest */
+  --sky: #5e8b99;         /* accent — Fox River water / winter sky */
+  --card: #ffffff;
+  --line: #e1d7c1;
+}
+
+@theme inline {
+  --color-clay: var(--clay);
+  --color-clay-dark: var(--clay-dark);
+  --color-grove: var(--grove);
+  --color-grove-deep: var(--grove-deep);
+  --color-gold: var(--gold);
+  --color-cedar: var(--cedar);
+  --color-cream: var(--cream);
+  --color-cream-deep: var(--cream-deep);
+  --color-ink: var(--ink);
+  --color-sky: var(--sky);
+  --color-card: var(--card);
+  --color-line: var(--line);
+
+  --font-display: var(--font-fraunces);
+  --font-sans: var(--font-work-sans);
+
+  --radius-xl: 1.25rem;
+}
+
+* {
+  border-color: var(--line);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--font-work-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  /* clip (not hidden) prevents horizontal scroll WITHOUT breaking position: sticky */
+  overflow-x: clip;
+}
+
+h1, h2, h3, h4, .font-display {
+  font-family: var(--font-fraunces), Georgia, serif;
+  font-optical-sizing: auto;
+}
+
+img, video, canvas, svg {
+  max-width: 100%;
+}
+
+::selection {
+  background: var(--gold);
+  color: var(--ink);
+}
+
+.bg-hills {
+  background-image:
+    radial-gradient(120% 80% at 50% 0%, rgba(232, 182, 70, 0.10), transparent 60%),
+    linear-gradient(180deg, var(--cream) 0%, var(--cream-deep) 100%);
+}
+
+.text-balance { text-wrap: balance; }
+.text-pretty { text-wrap: pretty; }
+
+@keyframes fadeup {
+  from { transform: translateY(16px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.animate-fadeup { animation: fadeup 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* Testimonial marquee — duplicated track slides half its width */
+@keyframes marquee {
+  to { transform: translate3d(-50%, 0, 0); }
+}
+.marquee-track {
+  animation: marquee 48s linear infinite;
+  will-change: transform;
+}
+.marquee:hover .marquee-track,
+.marquee:focus-within .marquee-track {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { animation: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .animate-fadeup { animation: none; }
+}
