@@ -33,7 +33,9 @@ export function StylesFilm() {
         e.preventDefault();
         const scale =
           e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? el.clientHeight : 1;
-        window.scrollBy(0, e.deltaY * scale);
+        // Force "instant" so the page tracks the wheel 1:1 — the root has
+        // scroll-behavior:smooth, which would otherwise make the handoff lag.
+        window.scrollBy({ top: e.deltaY * scale, behavior: "instant" });
       }
     };
     el.addEventListener("wheel", onWheel, { passive: false });
