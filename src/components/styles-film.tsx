@@ -38,32 +38,31 @@ export function StylesFilm() {
     let snapping = false;
 
     const snap = () => {
-      if (snapping) return;
       const range = wrap.offsetHeight - window.innerHeight;
       if (range <= 0) return;
-      const top = wrap.getBoundingClientRect().top + window.scrollY;
+      const wrapTop = wrap.getBoundingClientRect().top + window.scrollY;
       const y = window.scrollY;
-      if (y < top - 2 || y > top + range + 2) return; // outside → let it scroll
+      if (y < wrapTop - 2 || y > wrapTop + range + 2) return; // outside → free
       const step = range / (n - 1);
-      const i = Math.max(0, Math.min(n - 1, Math.round((y - top) / step)));
-      const target = Math.round(top + i * step);
+      const i = Math.max(0, Math.min(n - 1, Math.round((y - wrapTop) / step)));
+      const target = Math.round(wrapTop + i * step);
       if (Math.abs(target - y) < 3) return; // already on a material
       snapping = true;
       window.scrollTo({ top: target, behavior: "smooth" });
       setTimeout(() => (snapping = false), 650);
     };
 
-    const hasScrollEnd = "onscrollend" in window;
+    // Fire after scrolling has been idle for a beat (works for touch momentum
+    // and wheel alike). While a snap glide is running we ignore its own scroll
+    // events so it doesn't fight itself.
     const onScroll = () => {
-      if (snapping || hasScrollEnd) return;
+      if (snapping) return;
       clearTimeout(idle);
-      idle = setTimeout(snap, 130);
+      idle = setTimeout(snap, 140);
     };
     window.addEventListener("scroll", onScroll, { passive: true });
-    if (hasScrollEnd) window.addEventListener("scrollend", snap);
     return () => {
       window.removeEventListener("scroll", onScroll);
-      if (hasScrollEnd) window.removeEventListener("scrollend", snap);
       clearTimeout(idle);
     };
   }, []);
