@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import { useFilmScrub, type Seg } from "@/lib/film";
 import { showcasePanels } from "@/lib/site";
@@ -25,6 +25,48 @@ export function StylesFilm() {
 
   const pos = progress * (n - 1); // 0..4 (which material we're on/between)
   const current = Math.round(pos);
+
+  // Snap-on-pause: when the reader STOPS scrolling while inside the material
+  // range, glide the page to the nearest material so they land on a title, not
+  // between two. It only nudges on idle — it never blocks scrolling, and once
+  // you're past the last material it leaves you alone so the page continues.
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    if (!wrap) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let idle: ReturnType<typeof setTimeout> | undefined;
+    let snapping = false;
+
+    const snap = () => {
+      if (snapping) return;
+      const range = wrap.offsetHeight - window.innerHeight;
+      if (range <= 0) return;
+      const top = wrap.getBoundingClientRect().top + window.scrollY;
+      const y = window.scrollY;
+      if (y < top - 2 || y > top + range + 2) return; // outside → let it scroll
+      const step = range / (n - 1);
+      const i = Math.max(0, Math.min(n - 1, Math.round((y - top) / step)));
+      const target = Math.round(top + i * step);
+      if (Math.abs(target - y) < 3) return; // already on a material
+      snapping = true;
+      window.scrollTo({ top: target, behavior: "smooth" });
+      setTimeout(() => (snapping = false), 650);
+    };
+
+    const hasScrollEnd = "onscrollend" in window;
+    const onScroll = () => {
+      if (snapping || hasScrollEnd) return;
+      clearTimeout(idle);
+      idle = setTimeout(snap, 130);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    if (hasScrollEnd) window.addEventListener("scrollend", snap);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (hasScrollEnd) window.removeEventListener("scrollend", snap);
+      clearTimeout(idle);
+    };
+  }, []);
 
   function quoteStyle(slug: string) {
     window.dispatchEvent(new CustomEvent("slf:pick-material", { detail: slug }));
