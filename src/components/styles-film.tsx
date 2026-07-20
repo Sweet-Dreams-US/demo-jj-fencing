@@ -35,7 +35,28 @@ export function StylesFilm() {
     if (!wrap) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let idle: ReturnType<typeof setTimeout> | undefined;
-    let snapping = false;
+    let raf = 0;
+    let animating = false;
+    const root = () => document.scrollingElement || document.documentElement;
+
+    // Glide the page to `target` with a short easing, driven by direct scrollTop
+    // writes (not scrollTo{behavior:'smooth'}, which some browsers ignore).
+    const glideTo = (target: number) => {
+      animating = true;
+      const start = window.scrollY;
+      const dist = target - start;
+      const dur = 420;
+      let t0: number | undefined;
+      const ease = (k: number) => 1 - Math.pow(1 - k, 3);
+      const frame = (now: number) => {
+        if (t0 === undefined) t0 = now;
+        const k = Math.min(1, (now - t0) / dur);
+        root().scrollTop = Math.round(start + dist * ease(k));
+        if (k < 1) raf = requestAnimationFrame(frame);
+        else animating = false;
+      };
+      raf = requestAnimationFrame(frame);
+    };
 
     const snap = () => {
       const range = wrap.offsetHeight - window.innerHeight;
@@ -47,16 +68,13 @@ export function StylesFilm() {
       const i = Math.max(0, Math.min(n - 1, Math.round((y - wrapTop) / step)));
       const target = Math.round(wrapTop + i * step);
       if (Math.abs(target - y) < 3) return; // already on a material
-      snapping = true;
-      window.scrollTo({ top: target, behavior: "smooth" });
-      setTimeout(() => (snapping = false), 650);
+      glideTo(target);
     };
 
-    // Fire after scrolling has been idle for a beat (works for touch momentum
-    // and wheel alike). While a snap glide is running we ignore its own scroll
-    // events so it doesn't fight itself.
+    // Fire after scrolling has been idle for a beat (covers touch momentum and
+    // wheel). Ignore the glide's own scroll events so it doesn't fight itself.
     const onScroll = () => {
-      if (snapping) return;
+      if (animating) return;
       clearTimeout(idle);
       idle = setTimeout(snap, 140);
     };
@@ -64,6 +82,7 @@ export function StylesFilm() {
     return () => {
       window.removeEventListener("scroll", onScroll);
       clearTimeout(idle);
+      cancelAnimationFrame(raf);
     };
   }, []);
 
